@@ -10,6 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
 
 import com.study.dicomtest.domain.Series;
 import com.study.dicomtest.domain.Study;
@@ -35,5 +36,17 @@ public class StudyController {
         List<Series> seriesList = studyService.getSeriesByStudyKey(studyKey);
         model.addAttribute("series", seriesList);
         return "series";
+    }
+    
+    // 환자의 ID로 Study 검색
+    @GetMapping("/studies/patientId/{patientId}")
+    public List<Study> getStudiesByPatientId(@PathVariable String patientId) {
+        return studyService.getStudiesByPatientId(patientId);
+    }
+
+    // 환자의 이름으로 Study 검색
+    @GetMapping("/studies/patientName/{patientName}")
+    public List<Study> getStudiesByPatientName(@PathVariable String patientName) {
+        return studyService.getStudiesByPatientName(patientName);
     }
 }

@@ -18,6 +18,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
@@ -58,24 +59,40 @@ public class ImageController {
 
     // 실제 이미지 파일을 반환하는 메서드
     @GetMapping("/display/{imageId}")
-    public ResponseEntity<Resource> displayImage(@PathVariable Long imageId) {
-        Image image = imageRepository.findById(imageId).orElse(null);
-        if (image == null) {
-            return ResponseEntity.notFound().build();
-        }
+//    public ResponseEntity<Resource> displayImage(@PathVariable Long imageId) {
+//        Image image = imageRepository.findById(imageId).orElse(null);
+//        if (image == null) {
+//            return ResponseEntity.notFound().build();
+//        }
+//
+//        // 이미지 경로와 파일명 결합
+//        Path imagePath = Paths.get("C:/Users/TJ/Desktop/PACSStorage", image.getPath(), image.getFname());
+//        Resource resource = null;
+//
+//        try {
+//            resource = new UrlResource(imagePath.toUri());
+//        } catch (Exception e) {
+//            return ResponseEntity.notFound().build();
+//        }
+//
+//        return ResponseEntity.ok()
+//                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
+//                .body(resource);
+//    }
+    public ResponseEntity<Resource> displayImage(@PathVariable("id") Long imageId) {
+        // 이미지 정보를 DB에서 가져오기
+        Image image = imageRepository.findById(imageId)
+            .orElseThrow(() -> new RuntimeException("이미지를 찾을 수 없습니다."));
 
-        // 이미지 경로와 파일명 결합
-        Path imagePath = Paths.get("C:/Users/TJ/Desktop/PACSStorage", image.getPath(), image.getFname());
-        Resource resource = null;
+        // 이미지 파일을 가져올 경로 설정 (예: static/img/ 디렉토리)
+        Path imagePath = Paths.get("static/img/" + image.getFname());
+        
+        // 이미지 파일을 리소스로 반환
+        Resource resource = new UrlResource(imagePath.toUri());
 
-        try {
-            resource = new UrlResource(imagePath.toUri());
-        } catch (Exception e) {
-            return ResponseEntity.notFound().build();
-        }
-
+        // HTTP 헤더 설정 (이미지 다운로드가 아닌 표시)
         return ResponseEntity.ok()
-                .header(HttpHeaders.CONTENT_DISPOSITION, "inline; filename=\"" + resource.getFilename() + "\"")
-                .body(resource);
+            .header(HttpHeaders.CONTENT_TYPE, Files.probeContentType(imagePath))
+            .body(resource);
     }
 }

@@ -22,6 +22,10 @@ public class Study {
     @Column(name = "PATKEY", length = 64)
     private String patKey;
 
+    @ManyToOne
+    @JoinColumn(name = "patient_id")
+    private Patient patient;
+    
     @Column(name = "ACCESSNUM", length = 64)
     private String accessNum;
 

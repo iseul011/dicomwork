@@ -1,12 +1,32 @@
 <!DOCTYPE html>
-<html xmlns:th="http://www.thymeleaf.org">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>Study 목록</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Studies</title>
+    <style>
+        table, th, td {
+            border: 1px solid black;
+            border-collapse: collapse;
+            padding: 10px;
+        }
+    </style>
 </head>
 <body>
-    <h1>Study 목록</h1>
-    <table border="1">
+    <h1>Search Studies by Patient</h1>
+
+    <div>
+        <label for="searchType">Search by:</label>
+        <select id="searchType">
+            <option value="id">Patient ID</option>
+            <option value="name">Patient Name</option>
+        </select>
+        <input type="text" id="searchValue" placeholder="Enter ID or Name">
+        <button onclick="searchStudies()">Search</button>
+    </div>
+
+    <h2>Results:</h2>
+    <table id="resultsTable">
         <thead>
             <tr>
                 <th>Study Date</th>
@@ -16,18 +36,63 @@
                 <th>상세 보기</th>
             </tr>
         </thead>
-        <tbody>
-            <!-- 타임리프의 th:each를 사용하여 반복 렌더링 -->
-            <tr th:each="study : ${studies}">
-                <td th:text="${study.studyDate}"></td>
-                <td th:text="${study.studyDesc}"></td>
-                <td th:text="${study.modality}"></td>
-                <td th:text="${study.pName}"></td>
-                <td>
-                    <a th:href="@{'/studies/' + ${study.studyKey} + '/series'}">시리즈 보기</a>
-                </td>
-            </tr>
+        <tbody id="resultsBody">
+            <!-- 검색 결과가 여기에 나타납니다 -->
         </tbody>
     </table>
+
+    <script>
+        function searchStudies() {
+            const searchType = document.getElementById('searchType').value;
+            const searchValue = document.getElementById('searchValue').value;
+            const url = searchType === 'id' 
+                ? `/api/studies/patientId/${searchValue}` 
+                : `/api/studies/patientName/${searchValue}`;
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    const resultsBody = document.getElementById('resultsBody');
+                    resultsBody.innerHTML = ''; // 기존 테이블 내용 삭제
+
+                    data.forEach(study => {
+                        const row = document.createElement('tr');
+
+                        const studyDateCell = document.createElement('td');
+                        studyDateCell.textContent = study.studyDate || 'N/A';
+                        row.appendChild(studyDateCell);
+
+                        const studyDescriptionCell = document.createElement('td');
+                        studyDescriptionCell.textContent = study.studyDescription || 'N/A';
+                        row.appendChild(studyDescriptionCell);
+
+                        const modalityCell = document.createElement('td');
+                        modalityCell.textContent = study.modality || 'N/A';
+                        row.appendChild(modalityCell);
+
+                        const patientNameCell = document.createElement('td');
+                        patientNameCell.textContent = study.patient.pName || 'N/A';
+                        row.appendChild(patientNameCell);
+
+                        const viewDetailCell = document.createElement('td');
+                        const detailButton = document.createElement('button');
+                        detailButton.textContent = "상세 보기";
+                        detailButton.onclick = function () {
+                            viewDetail(study.id);
+                        };
+                        viewDetailCell.appendChild(detailButton);
+                        row.appendChild(viewDetailCell);
+
+                        resultsBody.appendChild(row);
+                    });
+                });
+        }
+
+        function viewDetail(studyId) {
+            alert(`상세 정보를 보려면 Study ID: ${studyId}를 클릭했습니다!`);
+            // 실제 상세 페이지로 이동하는 기능을 추가할 수 있습니다.
+            // 예: window.location.href = `/study-detail/${studyId}`;
+        }
+    </script>
 </body>
 </html>

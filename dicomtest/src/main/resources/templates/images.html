@@ -2,15 +2,22 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <!-- Cornerstone Latest -->
+    <title>DICOM IMAGE VIEWER</title>
+
+    <!-- Cornerstone Libraries -->
     <script src="https://unpkg.com/cornerstone-core"></script>
     <script src="https://unpkg.com/cornerstone-tools"></script>
     <script src="https://unpkg.com/dicom-parser"></script>
     <script src="https://unpkg.com/cornerstone-wado-image-loader"></script>
-    <title>DICOM IMAGE VIEWER</title>
+
+    <!-- Bootstrap for styling -->
+    <link href="https://netdna.bootstrapcdn.com/bootstrap/3.1.1/css/bootstrap.min.css" rel="stylesheet">
+
     <style>
         #dicomImage {
-            height: 600px;
+            width: 512px;
+            height: 512px;
+            background-color: black;
         }
     </style>
 
@@ -18,23 +25,91 @@
     <script th:inline="javascript">
         var imagePaths = /*[[${imagePaths}]]*/ [];
         console.log('이미지 경로 리스트:', imagePaths);
-    </script>
 
+        // Cornerstone WADO Image Loader 설정
+        cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
+        cornerstoneWADOImageLoader.configure({
+            useWebWorkers: true,
+        });
+    </script>
 </head>
 <body>
-    <h2>DICOM IMAGE VIEWER</h2>
+    <div class="container">
+        <h2>DICOM IMAGE VIEWER</h2>
 
-    <!-- 이미지 뷰어 영역 -->
-    <div id="dicomImage" style="width:512px;height:512px"
-         oncontextmenu="return false"
-         onmousedown="return false">
+        <!-- DICOM 이미지 뷰어 영역 -->
+        <div id="dicomImage"
+             oncontextmenu="return false"
+             onmousedown="return false"></div>
+
+        <!-- 이미지 전환 버튼 -->
+        <button id="prevImage" type="button" class="btn btn-default">이전 이미지</button>
+        <button id="nextImage" type="button" class="btn btn-default">다음 이미지</button>
     </div>
 
-    <!-- 이전 이미지 / 다음 이미지 버튼 -->
-    <button id="prevImage">이전 이미지</button>
-    <button id="nextImage">다음 이미지</button>
+</body>
+
 
     <!-- JavaScript 파일 포함 -->
     <script src="/js/testjs.js"></script>
-</body>
+
+    <script>
+        // Cornerstone 설정
+        const element = document.getElementById('dicomImage');
+		cornerstone.enable(element);
+		
+		let currentImageIndex = 0;
+		
+		// 이미지를 로드하고 표시하는 함수
+		function updateTheImage(imageIndex) {
+		    if (imageIndex >= 0 && imageIndex < imagePaths.length) {
+		        currentImageIndex = imageIndex;
+		        const imageId = `wadouri:http://localhost:8080/dicom-file/${imagePaths[currentImageIndex]}`;
+		        
+		        console.log("이미지 로드 경로:", imageId);  // 경로 확인을 위해 로그 출력
+		
+		        cornerstone.loadImage(imageId).then(function(image) {
+		            cornerstone.displayImage(element, image);
+		        }).catch(function(err) {
+		            console.error('이미지 로드 실패:', err);
+		        });
+		    }
+		}
+		
+		// 페이지가 로드되면 첫 번째 이미지 표시
+		updateTheImage(0);
+		
+		// 이전/다음 버튼 클릭 이벤트
+		document.getElementById('prevImage').addEventListener('click', function () {
+		    if (currentImageIndex > 0) {
+		        updateTheImage(currentImageIndex - 1);
+		    }
+		});
+		
+		document.getElementById('nextImage').addEventListener('click', function () {
+		    if (currentImageIndex < imagePaths.length - 1) {
+		        updateTheImage(currentImageIndex + 1);
+		    }
+		});
+		
+		// 마우스 휠로 이미지 전환 (다음/이전 이미지 표시)
+		element.addEventListener('wheel', function (e) {
+		    e.preventDefault();  // 기본 스크롤 방지
+		    console.log('deltaY:', e.deltaY);  // deltaY 값 확인
+		
+		    if (e.deltaY > 0) {
+		        // 휠을 아래로 스크롤: 다음 이미지로 이동
+		        if (currentImageIndex < imagePaths.length - 1) {
+		            updateTheImage(currentImageIndex + 1);
+		        }
+		    } else {
+		        // 휠을 위로 스크롤: 이전 이미지로 이동
+		        if (currentImageIndex > 0) {
+		            updateTheImage(currentImageIndex - 1);
+		        }
+		    }
+		});
+
+    </script>
+    
 </html>

@@ -88,7 +88,7 @@ public class Series {
     private String insertTime;
 
     @Column(name = "HOSPITALID", precision = 19, scale = 0)
-    private Long hospitalId;
+    private Long hospitalId = null;
 
     @Column(name = "PERFORMINGPHYSICIANNAME", length = 255)
     private String performingPhysicianName;

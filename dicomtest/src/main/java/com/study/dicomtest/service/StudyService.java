@@ -39,4 +39,14 @@ public class StudyService {
         return seriesRepository.findByStudyKey(studyKey);
     
 	}
+    
+    // 환자의 ID로 Study 목록 조회
+    public List<Study> getStudiesByPatientId(String patientId) {
+        return studyRepository.findByPatientPid(patientId);
+    }
+
+    // 환자의 이름으로 Study 목록 조회
+    public List<Study> getStudiesByPatientName(String patientName) {
+        return studyRepository.findByPatient_pName(patientName);
+    }
 }
