@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Study 목록</title>
+</head>
+<body>
+    <h1>Study 목록</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>Study Date</th>
+                <th>Study Description</th>
+                <th>Modality</th>
+                <th>환자 이름</th>
+                <th>상세 보기</th>
+            </tr>
+        </thead>
+        <tbody>
+            <!-- 타임리프의 th:each를 사용하여 반복 렌더링 -->
+            <tr th:each="study : ${studies}">
+                <td th:text="${study.studyDate}"></td>
+                <td th:text="${study.studyDesc}"></td>
+                <td th:text="${study.modality}"></td>
+                <td th:text="${study.pName}"></td>
+                <td>
+                    <a th:href="@{'/studies/' + ${study.studyKey} + '/series'}">시리즈 보기</a>
+                </td>
+            </tr>
+        </tbody>
+    </table>
+</body>
+</html>

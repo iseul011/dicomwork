@@ -1,0 +1,19 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <script src="https://unpkg.com/cornerstone-core"></script>
+    <script src="https://unpkg.com/cornerstone-tools"></script>
+    <script src="https://unpkg.com/dicom-parser"></script>
+    <script src="https://unpkg.com/cornerstone-wado-image-loader"></script>
+    <title>Image List</title>
+</head>
+<body>
+    <h1>Images for Patient: [[${patient.pname}]]</h1>
+
+    <ul>
+        <li th:each="image : ${images}">
+            <a th:href="@{/images/display/{id}(id=${image.imageKey})}" th:text="${image.fname}">Image</a>
+        </li>
+    </ul>
+</body>
+</html>
