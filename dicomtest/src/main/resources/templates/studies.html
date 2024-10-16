@@ -1,32 +1,31 @@
 <!DOCTYPE html>
-<html lang="en">
+<html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Search Studies</title>
-    <style>
-        table, th, td {
-            border: 1px solid black;
-            border-collapse: collapse;
-            padding: 10px;
-        }
-    </style>
+    <title>Study 목록</title>
+    <!-- JS 파일 불러오기 -->
+    <script src="/js/search.js"></script>
 </head>
 <body>
-    <h1>Search Studies by Patient</h1>
-
+    <h1 onclick="showAllStudies()" style="cursor: pointer;">Study 목록</h1>
     <div>
-        <label for="searchType">Search by:</label>
+        <label for="searchType">환자 검색하기</label>
         <select id="searchType">
-            <option value="id">Patient ID</option>
-            <option value="name">Patient Name</option>
+            <option value="id">환자 ID</option>
+            <option value="name">환자 이름</option>
         </select>
         <input type="text" id="searchValue" placeholder="Enter ID or Name">
-        <button onclick="searchStudies()">Search</button>
+        <button onclick="searchStudies()">검색</button>
     </div>
-
-    <h2>Results:</h2>
-    <table id="resultsTable">
+    <br/>
+    
+    <!-- 검색이 수행되었고, 결과가 없을 때 보여줄 메시지 -->
+    <div th:if="${searchPerformed and #lists.isEmpty(studies)}">
+	    <p>검색한 환자 목록이 없습니다.</p>
+	</div>
+    
+    <!-- 검색 결과가 있을 때만 테이블을 표시 -->
+    <table border="1" th:if="${!#lists.isEmpty(studies)}">
         <thead>
             <tr>
                 <th>Study Date</th>
@@ -36,63 +35,15 @@
                 <th>상세 보기</th>
             </tr>
         </thead>
-        <tbody id="resultsBody">
-            <!-- 검색 결과가 여기에 나타납니다 -->
+        <tbody>
+            <tr th:each="study : ${studies}">
+                <td th:text="${study.studyDate}"></td>
+                <td th:text="${study.studyDesc}"></td>
+                <td th:text="${study.modality}"></td>
+                <td th:text="${study.pName}"></td>
+                <td><a th:href="@{'/studies/' + ${study.studyKey} + '/series'}">시리즈 보기</a></td>
+            </tr>
         </tbody>
     </table>
-
-    <script>
-        function searchStudies() {
-            const searchType = document.getElementById('searchType').value;
-            const searchValue = document.getElementById('searchValue').value;
-            const url = searchType === 'id' 
-                ? `/api/studies/patientId/${searchValue}` 
-                : `/api/studies/patientName/${searchValue}`;
-
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    const resultsBody = document.getElementById('resultsBody');
-                    resultsBody.innerHTML = ''; // 기존 테이블 내용 삭제
-
-                    data.forEach(study => {
-                        const row = document.createElement('tr');
-
-                        const studyDateCell = document.createElement('td');
-                        studyDateCell.textContent = study.studyDate || 'N/A';
-                        row.appendChild(studyDateCell);
-
-                        const studyDescriptionCell = document.createElement('td');
-                        studyDescriptionCell.textContent = study.studyDescription || 'N/A';
-                        row.appendChild(studyDescriptionCell);
-
-                        const modalityCell = document.createElement('td');
-                        modalityCell.textContent = study.modality || 'N/A';
-                        row.appendChild(modalityCell);
-
-                        const patientNameCell = document.createElement('td');
-                        patientNameCell.textContent = study.patient.pName || 'N/A';
-                        row.appendChild(patientNameCell);
-
-                        const viewDetailCell = document.createElement('td');
-                        const detailButton = document.createElement('button');
-                        detailButton.textContent = "상세 보기";
-                        detailButton.onclick = function () {
-                            viewDetail(study.id);
-                        };
-                        viewDetailCell.appendChild(detailButton);
-                        row.appendChild(viewDetailCell);
-
-                        resultsBody.appendChild(row);
-                    });
-                });
-        }
-
-        function viewDetail(studyId) {
-            alert(`상세 정보를 보려면 Study ID: ${studyId}를 클릭했습니다!`);
-            // 실제 상세 페이지로 이동하는 기능을 추가할 수 있습니다.
-            // 예: window.location.href = `/study-detail/${studyId}`;
-        }
-    </script>
 </body>
 </html>

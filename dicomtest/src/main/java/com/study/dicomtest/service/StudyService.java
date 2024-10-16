@@ -40,13 +40,14 @@ public class StudyService {
     
 	}
     
-    // 환자의 ID로 Study 목록 조회
-    public List<Study> getStudiesByPatientId(String patientId) {
-        return studyRepository.findByPatientPid(patientId);
+    // 환자 ID나 이름으로 Study 목록을 검색하는 메서드 추가
+    public List<Study> searchStudies(String searchType, String searchValue) {
+        if ("id".equalsIgnoreCase(searchType)) {
+            return studyRepository.findByPid(searchValue); // 환자 ID로 검색
+        } else if ("name".equalsIgnoreCase(searchType)) {
+            return studyRepository.searchByPatientName(searchValue); // 환자 이름으로 검색
+        }
+        return getAllStudies(); // 검색 조건이 없으면 전체 목록 반환
     }
-
-    // 환자의 이름으로 Study 목록 조회
-    public List<Study> getStudiesByPatientName(String patientName) {
-        return studyRepository.findByPatient_pName(patientName);
-    }
+    
 }

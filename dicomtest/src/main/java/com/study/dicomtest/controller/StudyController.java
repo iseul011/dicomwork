@@ -10,7 +10,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 
 import com.study.dicomtest.domain.Series;
 import com.study.dicomtest.domain.Study;
@@ -22,11 +22,24 @@ public class StudyController {
     @Autowired
     private StudyService studyService;
 
-    
     @GetMapping("/studies")
-    public String getAllStudies(Model model) {
-        List<Study> studies = studyService.getAllStudies();
+    public String getAllStudies(
+    		@RequestParam(name = "searchType", required = false) String searchType,
+    		@RequestParam(name  = "searchValue", required = false) String searchValue,
+    		Model model) {
+    	
+        List<Study> studies;
+        
+        // 검색 조건이 없거나 비어 있으면 전체 목록을 불러옴
+        if (searchType == null || searchType.isEmpty() || searchValue == null || searchValue.isEmpty()) {
+            studies = studyService.getAllStudies();
+        } else {
+            // 검색 조건이 있으면 검색 실행
+            studies = studyService.searchStudies(searchType, searchValue);
+        }
+        
         model.addAttribute("studies", studies);  // 'studies' 이름으로 데이터를 모델에 추가
+        model.addAttribute("searchPerformed", true); // 검색이 수행되었음을 명시
         return "studies";  // Thymeleaf 템플릿 이름 (study-list.html)
     }
     
@@ -36,17 +49,5 @@ public class StudyController {
         List<Series> seriesList = studyService.getSeriesByStudyKey(studyKey);
         model.addAttribute("series", seriesList);
         return "series";
-    }
-    
-    // 환자의 ID로 Study 검색
-    @GetMapping("/studies/patientId/{patientId}")
-    public List<Study> getStudiesByPatientId(@PathVariable String patientId) {
-        return studyService.getStudiesByPatientId(patientId);
-    }
-
-    // 환자의 이름으로 Study 검색
-    @GetMapping("/studies/patientName/{patientName}")
-    public List<Study> getStudiesByPatientName(@PathVariable String patientName) {
-        return studyService.getStudiesByPatientName(patientName);
     }
 }
