@@ -18,6 +18,110 @@
             width: 512px;
             height: 512px;
             background-color: black;
+            display: grid;
+    		grid-gap: 10px;  /* 그리드 셀 사이 간격 설정 */
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+        }
+
+        /* 버튼 스타일링 */
+        .btn {
+            padding: 10px 20px;
+            background-color: #007bff;
+            color: white;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+            margin-bottom: 10px;
+        }
+
+        /* 드롭다운 상자 스타일링 (기본적으로 숨겨짐) */
+        .dropdown {
+            display: none;
+            position: absolute;
+            background-color: white;
+            border: 1px solid #ccc;
+            padding: 10px;
+            box-shadow: 0px 4px 8px rgba(0, 0, 0, 0.1);
+            z-index: 1;
+        }
+
+        /* 그리드 셀렉터 스타일 (5x5 그리드) */
+        .grid-selector-container {
+            display: grid;
+            grid-template-columns: repeat(5, 30px);
+            grid-template-rows: repeat(5, 30px);
+            gap: 2px;
+            margin-bottom: 10px;
+        }
+
+        /* 각 셀 스타일 */
+        .grid-selector-item {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ccc;
+            background-color: white;
+            cursor: pointer;
+        }
+
+        /* 선택된 셀 스타일 */
+        .grid-selector-item.selected {
+            background-color: rgb(128, 128, 128);
+        }
+
+        /* 이미지 그리드 컨테이너 (이미지 표시 영역) */
+        .dicomImage {
+            display: grid;
+            grid-gap: 10px;
+            margin-top: 20px;
+        }
+
+        /* 이미지 아이템 스타일 */
+        .grid-item {
+            border: 2px solid #333;
+            background-color: #ddd;
+            overflow: hidden;
+        }
+
+        /* 이미지 크기 조정 (그리드에 맞추기) */
+        .grid-item img {
+            width: 100px;
+            height: 100%;
+            object-fit: cover;
+            transition: opacity 0.5s ease-in-out;  /* 0.5초 동안 부드럽게 전환 */
+        	opacity: 0;
+        }
+        
+        .grid-item img.loaded {
+	        opacity: 1;  /* 이미지가 로드되면 나타남 */
+	    }
+	    
+	    .grid-item.loading img {
+		    opacity: 0;  /* 로딩 중일 때 투명하게 표시 */
+		}
+		
+		#seriesGrid {
+            width: 100%;
+            background-color: black;
+            display: grid;
+            grid-gap: 10px;  /* 그리드 셀 간격 설정 */
+        }
+        .grid-item {
+            border: 2px solid #333;
+            background-color: #ddd;
+            overflow: hidden;
+        }
+        .grid-option {
+            width: 30px;
+            height: 30px;
+            border: 1px solid #ccc;
+            background-color: white;
+            cursor: pointer;
+        }
+        .grid-option.selected {
+            background-color: grey;
         }
     </style>
 
@@ -36,80 +140,34 @@
 <body>
     <div class="container">
         <h2>DICOM IMAGE VIEWER</h2>
+        
+        <!-- 드롭다운을 토글하는 버튼 -->
+        <button class="btn" id="seriesLayoutBtn">시리즈 레이아웃</button>
+        
+        <!-- 드롭다운으로 레이아웃 선택 -->
+        <div id="seriesDropdown" style="display:none;">
+            <div id="seriesGridSelector" style="display: grid; grid-template-columns: repeat(5, 30px); grid-gap: 5px;">
+                <!-- 레이아웃 옵션이 동적으로 생성됩니다 -->
+            </div>
+        </div>
+
+        <!-- 드롭다운을 토글하는 버튼 -->
+        <button class="btn" id="imgLayoutBtn">이미지 레이아웃</button>
+
+        <!-- 레이아웃을 선택할 수 있는 드롭다운 -->
+        <div class="dropdown" id="dropdown">
+            <div class="grid-selector-container" id="grid-selector">
+                <!-- 5x5 그리드를 통해 행과 열 선택 -->
+            </div>
+        </div>
 
         <!-- DICOM 이미지 뷰어 영역 -->
-        <div id="dicomImage"
-             oncontextmenu="return false"
-             onmousedown="return false"></div>
-
-        <!-- 이미지 전환 버튼 -->
-        <button id="prevImage" type="button" class="btn btn-default">이전 이미지</button>
-        <button id="nextImage" type="button" class="btn btn-default">다음 이미지</button>
+        <div id="dicomImage" oncontextmenu="return false" onmousedown="return false"></div>
     </div>
-
-</body>
-
 
     <!-- JavaScript 파일 포함 -->
     <script src="/js/testjs.js"></script>
-
-    <script>
-        // Cornerstone 설정
-        const element = document.getElementById('dicomImage');
-		cornerstone.enable(element);
-		
-		let currentImageIndex = 0;
-		
-		// 이미지를 로드하고 표시하는 함수
-		function updateTheImage(imageIndex) {
-		    if (imageIndex >= 0 && imageIndex < imagePaths.length) {
-		        currentImageIndex = imageIndex;
-		        const imageId = `wadouri:http://localhost:8080/dicom-file/${imagePaths[currentImageIndex]}`;
-		        
-		        console.log("이미지 로드 경로:", imageId);  // 경로 확인을 위해 로그 출력
-		
-		        cornerstone.loadImage(imageId).then(function(image) {
-		            cornerstone.displayImage(element, image);
-		        }).catch(function(err) {
-		            console.error('이미지 로드 실패:', err);
-		        });
-		    }
-		}
-		
-		// 페이지가 로드되면 첫 번째 이미지 표시
-		updateTheImage(0);
-		
-		// 이전/다음 버튼 클릭 이벤트
-		document.getElementById('prevImage').addEventListener('click', function () {
-		    if (currentImageIndex > 0) {
-		        updateTheImage(currentImageIndex - 1);
-		    }
-		});
-		
-		document.getElementById('nextImage').addEventListener('click', function () {
-		    if (currentImageIndex < imagePaths.length - 1) {
-		        updateTheImage(currentImageIndex + 1);
-		    }
-		});
-		
-		// 마우스 휠로 이미지 전환 (다음/이전 이미지 표시)
-		element.addEventListener('wheel', function (e) {
-		    e.preventDefault();  // 기본 스크롤 방지
-		    console.log('deltaY:', e.deltaY);  // deltaY 값 확인
-		
-		    if (e.deltaY > 0) {
-		        // 휠을 아래로 스크롤: 다음 이미지로 이동
-		        if (currentImageIndex < imagePaths.length - 1) {
-		            updateTheImage(currentImageIndex + 1);
-		        }
-		    } else {
-		        // 휠을 위로 스크롤: 이전 이미지로 이동
-		        if (currentImageIndex > 0) {
-		            updateTheImage(currentImageIndex - 1);
-		        }
-		    }
-		});
-
-    </script>
-    
+    <script src="/js/imgLayout.js"></script>
+    <script src="/js/seriesLayout.js"></script>
+</body>
 </html>
