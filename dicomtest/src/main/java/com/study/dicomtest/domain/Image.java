@@ -44,6 +44,8 @@ public class Image {
 
     @Column(name = "FNAME", length = 256)
     private String fName;
+    
+    private String filePath;  // 파일 경로를 저장할 필드
 
     @Column(name = "SERIESNUMBER")
     private Long seriesNumber;

@@ -27,6 +27,15 @@
             </tr>
         </tbody>
     </table>
+    
+    <!-- JavaScript로 seriesKey 목록을 전달 -->
+    <script th:inline="javascript">
+        var seriesKeys = /*[[${series}]]*/ []
+        /*[[${series}]]*/.forEach(function(series) {
+            seriesKeys.push(series.seriesKey);
+        });
+        console.log('시리즈 키 리스트:', seriesKeys);
+    </script>
 
     <a th:href="@{'/studies'}">뒤로 가기</a>
 </body>

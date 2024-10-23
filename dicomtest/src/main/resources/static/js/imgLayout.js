@@ -12,6 +12,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 그리드 레이아웃 생성 및 이미지 로드
     function generateImageGrid(rows, cols) {
+    
         gridSize = { rows, cols };  // 현재 그리드 사이즈 저장
         const gridContainer = document.getElementById('dicomImage');
         gridContainer.innerHTML = '';  // 기존의 그리드를 초기화

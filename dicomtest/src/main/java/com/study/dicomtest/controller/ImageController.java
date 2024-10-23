@@ -7,9 +7,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.UrlResource;
 import org.springframework.http.HttpHeaders;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
@@ -74,4 +77,24 @@ public class ImageController {
             return ResponseEntity.notFound().build();
         }
     }
+    
+    @GetMapping("/dicom-file/{seriesKey}/first-image")
+    public ResponseEntity<Resource> getFirstImage(@PathVariable Long seriesKey) {
+        System.out.println("Fetching first image for seriesKey: " + seriesKey);
+        
+        // ImageService를 통해 이미지 가져오기
+        byte[] imageData = imageService.getFirstImageBySeriesKey(seriesKey);
+        
+        if (imageData != null) {
+            System.out.println("Successfully retrieved image data for seriesKey: " + seriesKey);
+            ByteArrayResource resource = new ByteArrayResource(imageData);
+            return ResponseEntity.ok()
+                .contentType(MediaType.IMAGE_JPEG)
+                .body(resource);
+        } else {
+            System.out.println("No image found for seriesKey: " + seriesKey);
+            return ResponseEntity.notFound().build();
+        }
+    }
+
 }
