@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    
     // cornerstone 초기화
     cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
     cornerstoneWADOImageLoader.external.cornerstoneTools = cornerstoneTools;

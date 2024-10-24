@@ -79,7 +79,7 @@ public class ImageController {
     }
     
     @GetMapping("/dicom-file/{seriesKey}/first-image")
-    public ResponseEntity<Resource> getFirstImage(@PathVariable Long seriesKey) {
+    public ResponseEntity<?> getFirstImage(@PathVariable("seriesKey") Long seriesKey) {
         System.out.println("Fetching first image for seriesKey: " + seriesKey);
         
         // ImageService를 통해 이미지 가져오기
@@ -89,12 +89,13 @@ public class ImageController {
             System.out.println("Successfully retrieved image data for seriesKey: " + seriesKey);
             ByteArrayResource resource = new ByteArrayResource(imageData);
             return ResponseEntity.ok()
-                .contentType(MediaType.IMAGE_JPEG)
+                .contentType(MediaType.IMAGE_JPEG) // 이미지 형식에 맞게 설정 (JPEG, PNG 등)
                 .body(resource);
         } else {
             System.out.println("No image found for seriesKey: " + seriesKey);
             return ResponseEntity.notFound().build();
         }
     }
+
 
 }

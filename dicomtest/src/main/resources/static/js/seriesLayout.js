@@ -1,77 +1,58 @@
 document.addEventListener('DOMContentLoaded', () => {
 
-    const gridContainer = document.getElementById('dicomImage');
+    // URL에서 seriesKeys 파라미터 추출
+    const urlParams = new URLSearchParams(window.location.search);
+    const seriesKeys = urlParams.get('seriesKeys') ? urlParams.get('seriesKeys').split(',') : [];
 
-    // 'dicomImage' 요소가 존재하는지 확인
-    if (!gridContainer) {
-        console.error("Element with ID 'dicomImage' not found.");
-        return;  // gridContainer가 없으면 함수 실행 중단
+    if (seriesKeys.length === 0) {
+        console.error('시리즈 키가 정의되지 않았거나 빈 배열입니다.');
+        return;
     }
+    
+    console.log('시리즈 키 리스트:', seriesKeys);  // 시리즈 키를 콘솔에 출력하여 확인
 
     // cornerstone 초기화
     cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
     cornerstoneWADOImageLoader.external.cornerstoneTools = cornerstoneTools;
-    cornerstone.enable(gridContainer);
+    
+    cornerstoneWADOImageLoader.configure({
+        useWebWorkers: true,  // Web Workers를 사용하여 성능 개선
+    });
 
-    let gridSize = { rows: 1, cols: 1 };  // 그리드 사이즈 정보
+    const element = document.getElementById('dicomImage');
+    if (!element) {
+        console.error("Element with ID 'dicomImage' not found.");
+        return;
+    }
+    cornerstone.enable(element);
 
-    // 그리드 레이아웃 생성 및 시리즈 이미지 로드
-    function generateSeriesLayout(rows, cols) {
-		 // 'dicomImage' 요소가 여전히 존재하는지 확인
+    let currentIndex = 0;  // 현재 이미지 인덱스 초기화
 
-        if (!gridContainer) {
+    const seriesLayoutBtn = document.getElementById('seriesLayoutBtn');
+    const seriesDropdown = document.getElementById('seriesDropdown');
 
-            console.error("Grid container not found.");
-
-            return;
-
+    // 시리즈 레이아웃 버튼 클릭 시 드롭다운 표시/숨김
+    seriesLayoutBtn?.addEventListener('click', () => {
+        if (seriesDropdown.style.display === 'block') {
+            seriesDropdown.style.display = 'none'; // 드롭다운 숨기기
+        } else {
+            seriesDropdown.style.display = 'block'; // 드롭다운 표시하기
         }
-        
-        gridSize = { rows, cols };
-        gridContainer.innerHTML = '';  // 기존의 그리드를 초기화
+    });
 
-        // 선택한 행과 열에 맞춰 그리드 레이아웃 설정
-        gridContainer.style.display = 'grid';
-        gridContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
-        gridContainer.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
-
-        // 각 셀에 시리즈 이미지를 로드하여 배치
-        for (let i = 0; i < rows * cols; i++) {
-            const gridItem = document.createElement('div');
-            gridItem.classList.add('grid-item');
-            gridItem.style.width = '100%';
-            gridItem.style.height = '100%';
-            gridContainer.appendChild(gridItem);
-
-            // Cornerstone 활성화
-            cornerstone.enable(gridItem);
-
-            // 이미지 로드 (예시 URL 사용)
-            if (i < seriesKeys.length) {
-                const seriesKey = seriesKeys[i];
-                const imageId = `wadouri:http://localhost:8080/dicom-file/${seriesKey}/first-image`;
-                
-                // seriesKey와 imageId를 로그로 출력하여 확인
-                console.log(`Loading image for seriesKey: ${seriesKey}, imageId: ${imageId}`);
-
-                try {
-                    cornerstone.loadImage(imageId).then(function (image) {
-                        cornerstone.displayImage(gridItem, image);
-                    }).catch(err => {
-                        console.error('이미지 로드 실패:', err);
-                    });
-                } catch (error) {
-                    console.error('cornerstone.loadImage에서 예외 발생:', error);
-                }
-            } else {
-                // 시리즈가 없을 경우 검은색 배경 적용
-                gridItem.style.backgroundColor = 'black';
-            }
-        }
+    const gridContainer = document.getElementById('dicomImage');
+    if (!gridContainer) {
+        console.error("Element with ID 'dicomImage' not found.");
+        return;
     }
 
-    // 그리드 선택 및 적용
+    // 그리드 선택 및 생성
     const gridSelector = document.getElementById('seriesGridSelector');
+    if (!gridSelector) {
+        console.error("Element with ID 'seriesGridSelector' not found.");
+        return;
+    }
+
     for (let row = 1; row <= 5; row++) {
         for (let col = 1; col <= 5; col++) {
             const gridOption = document.createElement('div');
@@ -79,43 +60,84 @@ document.addEventListener('DOMContentLoaded', () => {
             gridOption.dataset.row = row;
             gridOption.dataset.col = col;
 
-            // 마우스 호버 시 선택된 행과 열을 시각적으로 표시
             gridOption.addEventListener('mouseover', function () {
                 highlightGridSelection(row, col);
             });
 
-            // 그리드 아이템 클릭 시 선택된 행과 열에 맞게 시리즈 그리드 생성
             gridOption.addEventListener('click', function () {
                 const selectedRows = parseInt(gridOption.dataset.row);
                 const selectedCols = parseInt(gridOption.dataset.col);
                 generateSeriesLayout(selectedRows, selectedCols);
-                document.getElementById('seriesDropdown').style.display = 'none';  // 드롭다운 닫기
-                resetGridSelection();  // 그리드 선택 초기화
+                seriesDropdown.style.display = 'none';  
+                resetGridSelection();  
             });
 
             gridSelector.appendChild(gridOption);
         }
     }
 
-    // 선택한 그리드 셀을 시각적으로 강조하는 함수
+    // 그리드 셀 강조 표시
     function highlightGridSelection(rows, cols) {
         const gridItems = document.querySelectorAll('.grid-option');
         gridItems.forEach(item => {
             const itemRow = parseInt(item.dataset.row);
             const itemCol = parseInt(item.dataset.col);
             if (itemRow <= rows && itemCol <= cols) {
-                item.classList.add('selected');  // 선택된 셀 강조
+                item.classList.add('selected');
             } else {
-                item.classList.remove('selected');  // 강조 제거
+                item.classList.remove('selected');
             }
         });
     }
 
-    // 그리드 선택 초기화 함수
+    let gridSize = { rows: 1, cols: 1 };
+
+    // 그리드 레이아웃 생성 및 시리즈 첫 번째 이미지 로드
+    function generateSeriesLayout(rows, cols) {
+        gridSize = { rows, cols };
+        gridContainer.innerHTML = '';  
+
+        gridContainer.style.display = 'grid';
+        gridContainer.style.gridTemplateColumns = `repeat(${cols}, 1fr)`;
+        gridContainer.style.gridTemplateRows = `repeat(${rows}, 1fr)`;
+
+        // 각 셀에 시리즈 첫 번째 이미지를 로드하여 배치
+        for (let i = 0; i < rows * cols; i++) {
+            const gridItem = document.createElement('div');
+            gridItem.classList.add('grid-item');
+            gridItem.style.width = '100%';
+            gridItem.style.height = '100%';
+            gridContainer.appendChild(gridItem);
+
+            cornerstone.enable(gridItem);
+
+            // 이미지 로드 (시리즈의 첫 번째 이미지)
+            if (i < seriesKeys.length) {
+                const seriesKey = seriesKeys[i];
+                const imageId = `wadouri:http://localhost:8080/dicom-file/${seriesKey}/first-image`;
+
+                console.log(`Loading image for seriesKey: ${seriesKey}, imageId: ${imageId}`);
+
+                try {
+                    cornerstone.loadImage(imageId).then(function (image) {
+                        cornerstone.displayImage(gridItem, image);
+                    }).catch(err => {
+                        console.error(`이미지 로드 실패 (seriesKey: ${seriesKey}):`, err);
+                    });
+                } catch (error) {
+                    console.error('cornerstone.loadImage에서 예외 발생:', error);
+                }
+            } else {
+                gridItem.style.backgroundColor = 'black';  
+            }
+        }
+    }
+
+    // 그리드 초기화
     function resetGridSelection() {
         const gridItems = document.querySelectorAll('.grid-option');
         gridItems.forEach(item => {
-            item.classList.remove('selected');  // 선택된 셀 강조 해제
+            item.classList.remove('selected');
         });
     }
 

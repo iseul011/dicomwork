@@ -29,6 +29,7 @@ dependencies {
     implementation 'org.springframework.boot:spring-boot-starter-jdbc'
     implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
     implementation 'org.springframework.boot:spring-boot-starter-web'
+    implementation 'org.springframework.boot:spring-boot-starter-logging'
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
     providedRuntime 'org.springframework.boot:spring-boot-starter-tomcat'
@@ -39,4 +40,9 @@ dependencies {
 
 tasks.named('test') {
     useJUnitPlatform()
+}
+
+// Java 컴파일러에 '-parameters' 옵션 추가
+tasks.withType(JavaCompile) {
+    options.compilerArgs << '-parameters'
 }

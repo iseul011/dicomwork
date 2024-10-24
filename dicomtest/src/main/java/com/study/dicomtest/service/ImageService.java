@@ -69,5 +69,6 @@ public class ImageService {
         }
         return null;  // 이미지가 없으면 null 반환
     }
+
 }
 
