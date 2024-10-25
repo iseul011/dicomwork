@@ -141,8 +141,8 @@
     <div class="container">
         <h2>DICOM IMAGE VIEWER</h2>
         
-        <!-- 드롭다운을 토글하는 버튼 -->
-        <button class="btn" id="seriesLayoutBtn">시리즈 레이아웃</button>
+        <!-- 시리즈 레이아웃 버튼 -->
+		<button class="btn" id="seriesLayoutBtn" onclick="activateSeriesLayout()">시리즈 레이아웃</button>
         
         <!-- 드롭다운으로 레이아웃 선택 -->
         <div id="seriesDropdown" style="display:none;">
@@ -151,8 +151,8 @@
             </div>
         </div>
 
-        <!-- 드롭다운을 토글하는 버튼 -->
-        <button class="btn" id="imgLayoutBtn">이미지 레이아웃</button>
+        <!-- 이미지 레이아웃 버튼 -->
+		<button class="btn" id="imgLayoutBtn" onclick="activateImageLayout()">이미지 레이아웃</button>
 
         <!-- 레이아웃을 선택할 수 있는 드롭다운 -->
         <div class="dropdown" id="dropdown">

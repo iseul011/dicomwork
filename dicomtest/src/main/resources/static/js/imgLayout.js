@@ -1,3 +1,12 @@
+// 이미지 레이아웃 활성화 함수
+function activateImageLayout() {
+    // 이미지 레이아웃 활성화
+    document.getElementById('dropdown').style.display = 'block';
+    // 시리즈 레이아웃 비활성화
+    document.getElementById('seriesDropdown').style.display = 'none';
+}
+
+
 document.addEventListener('DOMContentLoaded', () => {
     
     // cornerstone 초기화
@@ -39,7 +48,9 @@ document.addEventListener('DOMContentLoaded', () => {
             // 이미지가 있는 셀은 이미지 로드, 없는 셀은 검은색 배경 적용
             if (i < totalImages) {
                 const imageId = `wadouri:http://localhost:8080/dicom-file/${imagePaths[(currentIndex + i) % totalImages]}`;
-                
+
+				console.log("이미지 로드 경로:", imageId);
+	
                 try {
                     cornerstone.loadImage(imageId).then(function(image) {
                         cornerstone.displayImage(gridItem, image).then(() => {

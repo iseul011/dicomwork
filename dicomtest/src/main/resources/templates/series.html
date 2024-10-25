@@ -22,7 +22,12 @@
                 <td th:text="${series.seriesDesc}"></td>
                 <td th:text="${series.modality}"></td>
                 <td>
+					
                     <a th:href="@{'/studies/' + ${series.studyKey} + '/series/' + ${series.seriesKey} + '/images'}">이미지 보기</a>
+                    
+					<!--<a th:href="@{'/studies/' + ${series.studyKey} + '/series/' + ${series.seriesKey} + '/images?seriesKeys=' + ${seriesKeys.join(',')}">이미지 보기</a>-->
+
+
                 </td>
             </tr>
         </tbody>
