@@ -1,4 +1,5 @@
 document.addEventListener('DOMContentLoaded', () => {
+    
     // cornerstone 초기화
     cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
     cornerstoneWADOImageLoader.external.cornerstoneTools = cornerstoneTools;
@@ -60,4 +61,5 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 첫 번째 이미지를 페이지 로드 시 표시
     updateTheImage(0);
+
 });

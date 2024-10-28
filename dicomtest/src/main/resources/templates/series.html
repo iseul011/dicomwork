@@ -23,7 +23,11 @@
                 <td th:text="${series.modality}"></td>
                 <td>
 					
-                    <a th:href="@{'/studies/' + ${series.studyKey} + '/series/' + ${series.seriesKey} + '/images'}">이미지 보기</a>
+                    <!--<a th:href="@{'/studies/' + ${series.studyKey} + '/series/' + ${series.seriesKey} + '/images'}">이미지 보기</a>-->
+                    
+                    <!-- series.html에서 링크를 클릭할 때 seriesKey 전달 -->
+					<a th:href="@{'/studies/' + ${series.studyKey} + '/series/' + ${series.seriesKey} + '/images?seriesKey=' + ${series.seriesKey}">이미지 보기</a>
+
                     
 					<!--<a th:href="@{'/studies/' + ${series.studyKey} + '/series/' + ${series.seriesKey} + '/images?seriesKeys=' + ${seriesKeys.join(',')}">이미지 보기</a>-->
 
