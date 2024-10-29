@@ -61,5 +61,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 첫 번째 이미지를 페이지 로드 시 표시
     updateTheImage(0);
+    
+    // 이미지 레이아웃/시리즈 레이아웃 호출함수
+    initializeImageLayout(element);
+    initializeSeriesLayout(element);
 
 });

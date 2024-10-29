@@ -1,54 +1,77 @@
+// URL에서 studyKey와 seriesKey를 가져오는 함수 추가
+function getStudyAndSeriesKeyFromURL() {
+    const urlPath = window.location.pathname.split('/');
+    const studyKey = urlPath.includes('studies') ? urlPath[urlPath.indexOf('studies') + 1] : null;
+    const urlParams = new URLSearchParams(window.location.search);
+    const seriesKey = urlParams.get('seriesKey');
+    return { studyKey, seriesKey };
+}
+
 // 이미지 레이아웃 초기화 함수
-function initializeImageLayout() {
-    function activateImageLayout() {
-        document.getElementById('dropdown').style.display = 'block';
+/*function initializeImageLayout() {
+    const imgLayoutBtn = document.getElementById('imgLayoutBtn');
+    const dropdown = document.getElementById('dropdown');
+    
+    imgLayoutBtn?.addEventListener('click', () => {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
         document.getElementById('seriesDropdown').style.display = 'none';
-        document.getElementById('imgLayoutBtn').disabled = false;
-    }
-
-    document.getElementById('imgLayoutBtn').addEventListener('click', activateImageLayout);
-
+        imgLayoutBtn.disabled = false;
+    });
     console.log("Image Layout Initialized");
 }
 
-// URL에서 seriesKey를 가져오는 함수
-function getSeriesKeyFromURL() {
-    const urlParams = new URLSearchParams(window.location.search);
-    return urlParams.get('seriesKey');
-}
+// 초기화 함수 호출
+document.addEventListener('DOMContentLoaded', initializeImageLayout);*/
 
-// 특정 seriesKey에 해당하는 첫 번째 이미지를 로드하는 함수
-async function loadFirstImageForSeries(seriesKey) {
-    try {
-        const response = await fetch(`/studies/${studyKey}/series/${seriesKey}/images`);
-        const images = await response.json();
-        
-        if (images && images.length > 0) {
-            const firstImagePath = images[0];
-            const imageId = `wadouri:http://localhost:8080/dicom-file/${firstImagePath}`;
-            cornerstone.loadImage(imageId).then(image => {
-                cornerstone.displayImage(document.getElementById('dicomImage'), image);
-            }).catch(err => {
-                console.error('Failed to load the first image:', err);
-            });
-        } else {
-            console.error('No images found for the selected series');
-        }
-    } catch (error) {
-        console.error('Error fetching images for series:', error);
+// 이미지 레이아웃 초기화 함수
+function initializeImageLayout(element) {
+    const imgLayoutBtn = document.getElementById('imgLayoutBtn');
+    const dropdown = document.getElementById('dropdown');
+
+    imgLayoutBtn?.addEventListener('click', () => {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        document.getElementById('seriesDropdown').style.display = 'none';
+        imgLayoutBtn.disabled = false;
+    });
+    console.log("Image Layout Initialized");
+
+    // URL에서 studyKey와 seriesKey 가져오기
+    const { studyKey, seriesKey } = getStudyAndSeriesKeyFromURL();
+    if (seriesKey) {
+        loadFirstImageForSeries(seriesKey);
+    } else {
+        console.error('Series key not found in URL');
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+
+
+
+// 첫 번째 이미지를 로드하는 함수 수정
+function loadFirstImageForSeries(seriesKey) {
+    const { studyKey } = getStudyAndSeriesKeyFromURL();
+
+    if (!studyKey || !seriesKey) {
+        console.error("studyKey 또는 seriesKey가 URL에서 찾을 수 없습니다.");
+        return;
+    }
+
+    // fetch 대신 URL로 리디렉션하여 HTML 페이지를 표시
+    const url = `/studies/${studyKey}/series/${seriesKey}/images`;
+    window.location.href = url; // HTML 페이지로 이동
+}
+
+
+/*document.addEventListener('DOMContentLoaded', () => {
     // cornerstone 초기화
     cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
-    cornerstoneWADOImageLoader.external.cornerstoneTools = cornerstoneTools;
+    cornerstoneWADOImageLoader.external.cornerstoneTools = cornerstoneTools;*/
 
     const element = document.getElementById('dicomImage');
     cornerstone.enable(element);
     
     // URL에서 seriesKey 가져오기
-    const seriesKey = getSeriesKeyFromURL();
+    const { seriesKey } = getStudyAndSeriesKeyFromURL(); // URL에서 seriesKey 가져오기
     if (seriesKey) {
         loadFirstImageForSeries(seriesKey);
     } else {
@@ -134,13 +157,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     // 드롭다운에서 행과 열 선택
-    document.getElementById('imgLayoutBtn').addEventListener('click', () => {
+    /*document.getElementById('imgLayoutBtn').addEventListener('click', () => {
         const dropdown = document.getElementById('dropdown');
         dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
-    });
+    });*/
 
     // 그리드 선택 및 적용
-    const gridSelector = document.getElementById('grid-selector');
+    const imgGridSelector = document.getElementById('grid-selector');
     
     for (let i = 1; i <= 5; i++) {
         for (let j = 1; j <= 5; j++) {
@@ -161,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 resetGridSelection();
             });
 
-            gridSelector.appendChild(gridItem);
+            imgGridSelector.appendChild(gridItem);
         }
     }
 
@@ -195,4 +218,4 @@ document.addEventListener('DOMContentLoaded', () => {
 	    const nextImagePath = imagePaths[currentIndex];
 	    loadAndDisplayImage(nextImagePath);
 	});
-});
+/*});*/

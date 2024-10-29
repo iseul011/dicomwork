@@ -1,6 +1,6 @@
 // 시리즈 레이아웃 초기화 함수
 // 시리즈 레이아웃 버튼을 클릭했을 때 드롭다운을 표시하거나 숨기는 함수입니다.
-function initializeSeriesLayout() {
+function initializeSeriesLayout(element) {
     const seriesLayoutBtn = document.getElementById('seriesLayoutBtn');
     const seriesDropdown = document.getElementById('seriesDropdown');
 
@@ -19,17 +19,27 @@ function initializeSeriesLayout() {
 }
 
 // 초기화 함수 호출
-/*initializeSeriesLayout();*/
+initializeSeriesLayout();
 
 // 페이지가 로드될 때 한 번만 호출되도록 조치
-document.addEventListener('DOMContentLoaded', () => {
+/*document.addEventListener('DOMContentLoaded', () => {
     initializeSeriesLayout();
 });
+*/
 
 // 전역 변수 설정
 let seriesKeys = ["1", "2", "3"];
 const urlParams = new URLSearchParams(window.location.search);
 const urlSeriesKeys = urlParams.get('seriesKeys') ? urlParams.get('seriesKeys').split(',') : [];
+
+// URL에서 studyKey와 seriesKey를 가져오는 함수 추가
+function getStudyAndSeriesKeyFromURL() {
+    const urlPath = window.location.pathname.split('/');
+    const studyKey = urlPath.includes('studies') ? urlPath[urlPath.indexOf('studies') + 1] : null;
+    const urlParams = new URLSearchParams(window.location.search);
+    const seriesKey = urlParams.get('seriesKey');
+    return { studyKey, seriesKey };
+}
 
 // 행과 열을 선택한 후 시리즈 레이아웃 적용 및 이미지 레이아웃 버튼 비활성화
 function applySeriesGridLayout(rows, cols) {
@@ -47,7 +57,8 @@ function applySeriesGridLayout(rows, cols) {
 }
 
 // 드롭다운에서 선택된 행과 열로 레이아웃을 적용하기 위한 그리드 생성
-const gridSelector = document.getElementById('seriesGridSelector');
+const seriesGridSelector = document.getElementById('seriesGridSelector');
+
 for (let row = 1; row <= 5; row++) {
     for (let col = 1; col <= 5; col++) {
         const gridOption = document.createElement('div');
@@ -67,7 +78,7 @@ for (let row = 1; row <= 5; row++) {
             applySeriesGridLayout(selectedRows, selectedCols);
         });
 
-        gridSelector.appendChild(gridOption);
+        seriesGridSelector.appendChild(gridOption);
     }
 }
 
@@ -86,14 +97,21 @@ function resetGridSelection() {
     document.querySelectorAll('.grid-option').forEach(item => item.classList.remove('selected'));
 }
 
-// 시리즈 이미지 레이아웃 생성 함수
+// 시리즈 이미지 레이아웃 생성 함수 수정
 async function fetchImagesAndGenerateLayout(rows, cols) {
+    const { studyKey } = getStudyAndSeriesKeyFromURL(); // studyKey를 URL에서 가져오기
+
+    if (!studyKey) {
+        console.error("studyKey가 URL에서 찾을 수 없습니다.");
+        return;
+    }
+
     try {
         if (!Array.isArray(seriesKeys) || seriesKeys.length === 0) {
             throw new Error("seriesKeys가 정의되지 않았거나 빈 배열입니다.");
         }
 
-        const response = await fetch(`/studies/2/series-images?seriesKeys=${seriesKeys.join(',')}`);
+        const response = await fetch(`/studies/${studyKey}/series-images?seriesKeys=${seriesKeys.join(',')}`);
         
         if (!response.ok) {
             throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
@@ -164,6 +182,7 @@ function loadAndDisplayImage(gridItem, filename, seriesKey) {
         console.log(`Displayed image for seriesKey: ${seriesKey}, imageId: ${imageId}`);
     }).catch(err => {
         console.error(`Failed to load image for seriesKey ${seriesKey}:`, err);
+        gridItem.style.backgroundColor = 'black'; // 이미지 로드 실패 시 검정 배경 표시
     });
 }
 
@@ -179,24 +198,32 @@ function applySingleSeriesLayout(seriesKey) {
     gridContainer.appendChild(gridItem);
     cornerstone.enable(gridItem);
 
-    // 해당 시리즈의 첫 번째 이미지 로드
-    fetch(`/studies/2/series/${seriesKey}/images`)
-	    .then(response => response.text()) // 응답을 텍스트로 읽기
-	    .then(text => {
-	        console.log('Response text:', text);
-	        return JSON.parse(text); // JSON으로 파싱 시도 (오류가 발생할 수 있음)
-	    })
-	    .then(images => {
-	        if (images && images.length > 0) {
-	            loadAndDisplayImage(gridItem, images[0], seriesKey);
-	        } else {
-	            console.warn(`No images found for seriesKey: ${seriesKey}`);
-	        }
-	    })
-	    .catch(error => console.error(`Error fetching images for series ${seriesKey}:`, error));
+    // URL에서 studyKey 가져오기
+    const { studyKey } = getStudyAndSeriesKeyFromURL();
+    if (!studyKey) {
+        console.error("studyKey가 URL에서 찾을 수 없습니다.");
+        return;
+    }
 
-    // 이미지 레이아웃 버튼 활성화
-    const imgLayoutBtn = document.getElementById('imgLayoutBtn');
-    imgLayoutBtn.disabled = false;
-    console.log(`Single series layout applied for seriesKey ${seriesKey} with 1x1 grid.`);
+    // 해당 시리즈의 첫 번째 이미지 로드
+    fetch(`/studies/${studyKey}/series/${seriesKey}/images`)
+        .then(response => {
+            if (!response.ok) throw new Error(`Network response was not ok: ${response.status} ${response.statusText}`);
+            return response.json(); // JSON으로 파싱
+        })
+        .then(images => {
+            if (images && images.length > 0) {
+                loadAndDisplayImage(gridItem, images[0], seriesKey);
+            } else {
+                console.warn(`No images found for seriesKey: ${seriesKey}`);
+                gridItem.style.backgroundColor = 'black';
+            }
+        })
+        .catch(error => console.error(`Error fetching images for series ${seriesKey}:`, error))
+        .finally(() => {
+            // 이미지 로드 이후 이미지 레이아웃 버튼 활성화
+            const imgLayoutBtn = document.getElementById('imgLayoutBtn');
+            if (imgLayoutBtn) imgLayoutBtn.disabled = false;
+            console.log(`Single series layout applied for seriesKey ${seriesKey} with 1x1 grid.`);
+        });
 }
