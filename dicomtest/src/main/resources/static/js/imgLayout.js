@@ -23,8 +23,13 @@ function getStudyAndSeriesKeyFromURL() {
 // 초기화 함수 호출
 document.addEventListener('DOMContentLoaded', initializeImageLayout);*/
 
+// 전역 변수 설정
+let seriesKeys = ["1", "2", "3"];
+const urlParams = new URLSearchParams(window.location.search);
+const urlSeriesKeys = urlParams.get('seriesKeys') ? urlParams.get('seriesKeys').split(',') : [];
+
 // 이미지 레이아웃 초기화 함수
-function initializeImageLayout(element) {
+/*function initializeImageLayout(element) {
     const imgLayoutBtn = document.getElementById('imgLayoutBtn');
     const dropdown = document.getElementById('dropdown');
 
@@ -42,8 +47,24 @@ function initializeImageLayout(element) {
     } else {
         console.error('Series key not found in URL');
     }
-}
+}*/
+function initializeImageLayout(element) {
+    const imgLayoutBtn = document.getElementById('imgLayoutBtn');
+    const dropdown = document.getElementById('dropdown');
+    const seriesDropdown = document.getElementById('seriesDropdown');
 
+    function toggleImageDropdown() {
+        dropdown.style.display = dropdown.style.display === 'block' ? 'none' : 'block';
+        seriesDropdown.style.display = 'none';  // 시리즈 드롭다운 숨김
+        console.log("Image Layout Dropdown Toggled");
+    }
+
+    if (imgLayoutBtn) {
+        imgLayoutBtn.addEventListener('click', toggleImageDropdown);
+    }
+
+    console.log("Image Layout Initialized");
+}
 
 
 
@@ -71,32 +92,38 @@ function loadFirstImageForSeries(seriesKey) {
     cornerstone.enable(element);
     
     // URL에서 seriesKey 가져오기
-    const { seriesKey } = getStudyAndSeriesKeyFromURL(); // URL에서 seriesKey 가져오기
-    if (seriesKey) {
-        loadFirstImageForSeries(seriesKey);
-    } else {
-        console.error('Series key not found in URL');
-    }
+    const { studyKey, seriesKey } = getStudyAndSeriesKeyFromURL();
+	if (!seriesKey) {
+	    console.warn("Series key not found in URL. 기본 레이아웃을 적용합니다.");
+	    // 기본 레이아웃을 호출하거나 에러 메시지를 표시
+	} else {
+	    loadFirstImageForSeries(seriesKey);
+	}
 
     let currentIndex = 0;  // 현재 이미지 인덱스 초기화
     const totalImages = imagePaths.length;  // 전체 이미지 개수
     let gridSize = { rows: 1, cols: 1 };  // 그리드 사이즈 정보
     
     // loadAndDisplayImage 함수 정의 (또는 기존 함수를 대체)
-    function loadAndDisplayImage(filename) {
-        if (!filename) {
-            console.error("Invalid filename:", filename);
-            return;  // filename이 유효하지 않으면 함수를 종료
-        }
+    function loadAndDisplayImage(gridItem, filename, seriesKey) {
+		
+		if (filename instanceof HTMLElement) {
+	        console.error("filename이 HTML 요소로 전달되었습니다. 텍스트로 변환을 시도합니다.");
+	        filename = filename.textContent || filename.value || "";
+	    }
+	
+	    if (!filename || typeof filename !== 'string') {
+	        console.error("Invalid filename:", filename);
+	        return;
+	    }
 
         const imageId = `wadouri:http://localhost:8080/dicom-file/${filename}`;
-        console.log("Loading imageId:", imageId);
-
-        cornerstone.loadImage(imageId).then(image => {
-            cornerstone.displayImage(element, image);
-        }).catch(err => {
-            console.error('이미지 로드 실패:', err);
-        });
+	    cornerstone.loadImage(imageId).then(image => {
+	        cornerstone.displayImage(gridItem, image);
+	    }).catch(err => {
+	        console.error(`Failed to load image for seriesKey ${seriesKey}:`, err);
+	        gridItem.style.backgroundColor = 'black';
+	    });
     }
 
     // 첫 번째 이미지를 로드
@@ -126,7 +153,8 @@ function loadFirstImageForSeries(seriesKey) {
             cornerstone.enable(gridItem);
 
             if (i < totalImages) {
-                const imageId = `wadouri:http://localhost:8080/dicom-file/${imagePaths[(currentIndex + i) % totalImages]}`;
+                //const imageId = `wadouri:http://localhost:8080/dicom-file/${imagePaths[(currentIndex + i) % totalImages]}`;
+                const imageId = `wadouri:http://localhost:8080/dicom-file/${imagePaths[i % imagePaths.length]}`;
                 console.log("이미지 로드 경로:", imageId);
 
                 cornerstone.loadImage(imageId).then(image => {

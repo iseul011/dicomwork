@@ -124,6 +124,8 @@
         .grid-option.selected {
             background-color: grey;
         }
+        
+        
     </style>
 
     <!-- Thymeleaf로 서버에서 전달된 imagePaths를 JavaScript로 넘겨줌 -->
@@ -146,8 +148,8 @@
 		<button class="btn" id="seriesLayoutBtn">시리즈 레이아웃</button>
         
         <!-- 드롭다운으로 레이아웃 선택 -->
-        <div id="seriesDropdown" style="display:none;">
-            <div id="seriesGridSelector" class="grid-selector-container">
+        <div id="seriesDropdown" class="dropdown" style="display: none;">
+            <div class="grid-selector-container" id="series-grid-selector">
                 <!-- 레이아웃 옵션이 동적으로 생성됩니다 -->
             </div>
         </div>
@@ -156,7 +158,7 @@
 		<button class="btn" id="imgLayoutBtn">이미지 레이아웃</button>
 
         <!-- 레이아웃을 선택할 수 있는 드롭다운 -->
-        <div class="dropdown" id="dropdown">
+        <div id="dropdown" class="dropdown">
             <div class="grid-selector-container" id="grid-selector">
                 <!-- 5x5 그리드를 통해 행과 열 선택 -->
             </div>
@@ -167,9 +169,9 @@
     </div>
 
     <!-- JavaScript 파일 포함 -->
-    <script src="/js/testjs.js"></script>
-    <script src="/js/imgLayout.js"></script>
-    <script src="/js/seriesLayout.js"></script>
+	<script src="/js/seriesLayout.js"></script>
+	<script src="/js/imgLayout.js"></script>
+	<script src="/js/testjs.js"></script>
 
 </body>
 
