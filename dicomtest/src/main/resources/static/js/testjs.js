@@ -1,9 +1,9 @@
 document.addEventListener('DOMContentLoaded', () => {
 	// cornerstone 초기화
     if (typeof cornerstone === 'undefined' || typeof cornerstoneWADOImageLoader === 'undefined') {
-        console.error("Cornerstone 또는 Cornerstone WADO Image Loader가 초기화되지 않았습니다.");
-        return;
-    }
+	    console.error("Cornerstone 또는 Cornerstone WADO Image Loader가 초기화되지 않았습니다.");
+	    return;
+	}
     
     // cornerstone 초기화
     cornerstoneWADOImageLoader.external.cornerstone = cornerstone;
